@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: premium-accessories-points-bot
+    env: node
+    plan: free
+    buildCommand: ""
+    startCommand: npm start
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: WEB_APP_URL
+        sync: false

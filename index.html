@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Store Points</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+      :root {
+        --bg: #f5f7fb;
+        --surface: #ffffff;
+        --surface-2: #eef3f8;
+        --text: #17202a;
+        --muted: #687382;
+        --line: #d9e1ea;
+        --brand: #0d7c66;
+        --brand-dark: #075f50;
+        --danger: #b42318;
+        --shadow: 0 14px 40px rgba(23, 32, 42, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(135deg, rgba(13, 124, 102, 0.12), transparent 38%),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      .app {
+        width: min(980px, 100%);
+        margin: 0 auto;
+        padding: 18px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 0 14px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .logo {
+        width: 92px;
+        height: 92px;
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        object-fit: contain;
+        padding: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(1.5rem, 5vw, 2.35rem);
+        line-height: 1.05;
+      }
+
+      .subtitle {
+        margin: 7px 0 0;
+        color: var(--muted);
+        font-size: 0.96rem;
+      }
+
+      .count {
+        min-width: 88px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 12px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+
+      .count strong {
+        display: block;
+        font-size: 1.35rem;
+      }
+
+      .count span {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: var(--shadow);
+      }
+
+      .form {
+        padding: 16px;
+      }
+
+      .form h2,
+      .list h2 {
+        margin: 0 0 14px;
+        font-size: 1.08rem;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 0.86rem;
+        font-weight: 650;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--text);
+        padding: 10px 12px;
+        outline: none;
+      }
+
+      input {
+        min-height: 46px;
+      }
+
+      textarea {
+        min-height: 86px;
+        resize: vertical;
+      }
+
+      input:focus,
+      textarea:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(13, 124, 102, 0.15);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .btn {
+        min-height: 46px;
+        border: 0;
+        border-radius: 8px;
+        color: #fff;
+        background: var(--brand);
+        cursor: pointer;
+        font-weight: 750;
+      }
+
+      .btn:hover {
+        background: var(--brand-dark);
+      }
+
+      .btn.secondary {
+        border: 1px solid var(--line);
+        color: var(--text);
+        background: var(--surface-2);
+      }
+
+      .btn.secondary:hover {
+        background: #e2ebf4;
+      }
+
+      .btn.danger {
+        background: var(--danger);
+      }
+
+      .search {
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .list {
+        overflow: hidden;
+      }
+
+      .list h2 {
+        padding: 16px 16px 0;
+      }
+
+      .customers {
+        display: grid;
+        gap: 10px;
+        max-height: 68vh;
+        overflow: auto;
+        padding: 0 14px 14px;
+      }
+
+      .customer {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 13px;
+      }
+
+      .customer h3 {
+        margin: 0 0 5px;
+        font-size: 1rem;
+      }
+
+      .customer p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .gift {
+        grid-column: 1 / -1;
+        border-radius: 8px;
+        background: #fff7e6;
+        color: #7a4a00;
+        padding: 9px 10px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .message {
+        grid-column: 1 / -1;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8fafc;
+        color: var(--muted);
+        padding: 9px 10px;
+        font-size: 0.86rem;
+        line-height: 1.35;
+      }
+
+      .points {
+        min-width: 74px;
+        align-self: start;
+        border-radius: 8px;
+        background: #e4f6f1;
+        color: #075f50;
+        padding: 9px;
+        text-align: center;
+        font-weight: 800;
+      }
+
+      .mini-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        grid-column: 1 / -1;
+      }
+
+      .small {
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface-2);
+        color: var(--text);
+        cursor: pointer;
+        padding: 6px 10px;
+        font-weight: 700;
+      }
+
+      .small.danger {
+        color: var(--danger);
+      }
+
+      .empty {
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        padding: 28px 16px;
+        text-align: center;
+      }
+
+      .notice {
+        min-height: 24px;
+        margin-top: 10px;
+        color: var(--brand-dark);
+        font-size: 0.9rem;
+        font-weight: 650;
+      }
+
+      @media (max-width: 760px) {
+        .app {
+          padding: 14px;
+        }
+
+        .topbar {
+          align-items: flex-start;
+        }
+
+        .logo {
+          width: 76px;
+          height: 76px;
+        }
+
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .customers {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 440px) {
+        .topbar {
+          display: grid;
+        }
+
+        .brand {
+          align-items: flex-start;
+        }
+
+        .count {
+          width: 100%;
+        }
+
+        .row,
+        .actions {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <section class="topbar">
+        <div class="brand">
+          <img class="logo" src="logo.jpg" alt="Premium Accessories logo" />
+          <div>
+            <h1 class="title">Store Points</h1>
+            <p class="subtitle">Save customer phone numbers, reward points, and gifts.</p>
+          </div>
+        </div>
+        <div class="count">
+          <strong id="customerCount">0</strong>
+          <span>customers</span>
+        </div>
+      </section>
+
+      <section class="layout">
+        <form class="panel form" id="customerForm">
+          <h2 id="formTitle">Add Customer</h2>
+          <input type="hidden" id="editingId" />
+
+          <label>
+            Customer name
+            <input id="name" autocomplete="name" placeholder="Example: Sokha" required />
+          </label>
+
+          <label>
+            Phone number
+            <input id="phone" autocomplete="tel" inputmode="tel" placeholder="Example: 012345678" required />
+          </label>
+
+          <div class="row">
+            <label>
+              Points
+              <input id="points" inputmode="numeric" min="0" type="number" value="0" required />
+            </label>
+
+            <label>
+              Add more
+              <input id="quickPoints" inputmode="numeric" min="1" type="number" value="1" />
+            </label>
+          </div>
+
+          <label>
+            Gift option
+            <input id="gift" placeholder="Example: Free case at 10 points" />
+          </label>
+
+          <label>
+            Customer notification
+            <textarea id="notification" placeholder="Example: Thank you! You now have {points} points. Your gift: {gift}."></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="btn" type="submit">Save</button>
+            <button class="btn secondary" id="clearForm" type="button">Clear</button>
+          </div>
+          <p class="notice" id="notice" role="status"></p>
+        </form>
+
+        <section class="panel list">
+          <div class="search">
+            <input id="search" placeholder="Search name or phone number" />
+          </div>
+          <h2>Customers</h2>
+          <div class="customers" id="customers"></div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const storageKey = "store-points-customers-v1";
+      const tg = window.Telegram?.WebApp;
+
+      if (tg) {
+        tg.ready();
+        tg.expand();
+      }
+
+      const form = document.querySelector("#customerForm");
+      const formTitle = document.querySelector("#formTitle");
+      const editingId = document.querySelector("#editingId");
+      const nameInput = document.querySelector("#name");
+      const phoneInput = document.querySelector("#phone");
+      const pointsInput = document.querySelector("#points");
+      const quickPointsInput = document.querySelector("#quickPoints");
+      const giftInput = document.querySelector("#gift");
+      const notificationInput = document.querySelector("#notification");
+      const searchInput = document.querySelector("#search");
+      const customersEl = document.querySelector("#customers");
+      const countEl = document.querySelector("#customerCount");
+      const noticeEl = document.querySelector("#notice");
+      const clearFormBtn = document.querySelector("#clearForm");
+
+      let customers = loadCustomers();
+
+      function loadCustomers() {
+        try {
+          return JSON.parse(localStorage.getItem(storageKey)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveCustomers() {
+        localStorage.setItem(storageKey, JSON.stringify(customers));
+      }
+
+      function cleanPhone(value) {
+        return value.replace(/[^\d+]/g, "");
+      }
+
+      function showNotice(message) {
+        noticeEl.textContent = message;
+        window.clearTimeout(showNotice.timer);
+        showNotice.timer = window.setTimeout(() => {
+          noticeEl.textContent = "";
+        }, 2200);
+      }
+
+      function resetForm() {
+        form.reset();
+        editingId.value = "";
+        pointsInput.value = "0";
+        quickPointsInput.value = "1";
+        notificationInput.value = "Hello {name}, you have {points} point(s) at Premium Accessories. Gift: {gift}.";
+        formTitle.textContent = "Add Customer";
+      }
+
+      function getNotification(customer) {
+        const template =
+          customer.notification ||
+          "Hello {name}, you have {points} point(s) at Premium Accessories. Gift: {gift}.";
+
+        return template
+          .replaceAll("{name}", customer.name)
+          .replaceAll("{phone}", customer.phone)
+          .replaceAll("{points}", customer.points)
+          .replaceAll("{gift}", customer.gift || "No gift yet");
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+
+        const temp = document.createElement("textarea");
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        temp.remove();
+      }
+
+      function render() {
+        const query = searchInput.value.trim().toLowerCase();
+        const visibleCustomers = customers
+          .filter((customer) => {
+            return (
+              customer.name.toLowerCase().includes(query) ||
+              customer.phone.toLowerCase().includes(query)
+            );
+          })
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        countEl.textContent = customers.length;
+        customersEl.innerHTML = "";
+
+        if (!visibleCustomers.length) {
+          customersEl.innerHTML = '<div class="empty">No customers found.</div>';
+          return;
+        }
+
+        for (const customer of visibleCustomers) {
+          const item = document.createElement("article");
+          item.className = "customer";
+          item.innerHTML = `
+            <div>
+              <h3></h3>
+              <p></p>
+            </div>
+            <div class="points"></div>
+            <div class="gift"></div>
+            <div class="message"></div>
+            <div class="mini-actions">
+              <button class="small" data-action="add" data-id="${customer.id}" type="button">+ Add</button>
+              <button class="small" data-action="minus" data-id="${customer.id}" type="button">- Minus</button>
+              <button class="small" data-action="notify" data-id="${customer.id}" type="button">Notify</button>
+              <button class="small" data-action="copy" data-id="${customer.id}" type="button">Copy Message</button>
+              <button class="small" data-action="edit" data-id="${customer.id}" type="button">Edit</button>
+              <button class="small danger" data-action="delete" data-id="${customer.id}" type="button">Delete</button>
+            </div>
+          `;
+          item.querySelector("h3").textContent = customer.name;
+          item.querySelector("p").textContent = customer.phone;
+          item.querySelector(".points").textContent = `${customer.points} pts`;
+          item.querySelector(".gift").textContent = `Gift: ${customer.gift || "No gift set"}`;
+          item.querySelector(".message").textContent = getNotification(customer);
+          customersEl.appendChild(item);
+        }
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const name = nameInput.value.trim();
+        const phone = cleanPhone(phoneInput.value.trim());
+        const points = Math.max(0, Number(pointsInput.value || 0));
+        const gift = giftInput.value.trim();
+        const notification = notificationInput.value.trim();
+
+        if (!name || !phone) {
+          showNotice("Please add name and phone number.");
+          return;
+        }
+
+        const duplicate = customers.find((customer) => {
+          return customer.phone === phone && customer.id !== editingId.value;
+        });
+
+        if (duplicate) {
+          showNotice("This phone number is already saved.");
+          return;
+        }
+
+        if (editingId.value) {
+          customers = customers.map((customer) => {
+            if (customer.id !== editingId.value) return customer;
+            return { ...customer, name, phone, points, gift, notification };
+          });
+          showNotice("Customer updated.");
+        } else {
+          customers.push({
+            id: crypto.randomUUID(),
+            name,
+            phone,
+            points,
+            gift,
+            notification,
+            createdAt: new Date().toISOString(),
+          });
+          showNotice("Customer saved.");
+        }
+
+        saveCustomers();
+        resetForm();
+        render();
+      });
+
+      customersEl.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+
+        const customer = customers.find((item) => item.id === button.dataset.id);
+        if (!customer) return;
+
+        const quickPoints = Math.max(1, Number(quickPointsInput.value || 1));
+
+        if (button.dataset.action === "add") {
+          customer.points += quickPoints;
+          showNotice(`Added ${quickPoints} point(s).`);
+        }
+
+        if (button.dataset.action === "minus") {
+          customer.points = Math.max(0, customer.points - quickPoints);
+          showNotice(`Removed ${quickPoints} point(s).`);
+        }
+
+        if (button.dataset.action === "edit") {
+          editingId.value = customer.id;
+          nameInput.value = customer.name;
+          phoneInput.value = customer.phone;
+          pointsInput.value = customer.points;
+          giftInput.value = customer.gift || "";
+          notificationInput.value =
+            customer.notification ||
+            "Hello {name}, you have {points} point(s) at Premium Accessories. Gift: {gift}.";
+          formTitle.textContent = "Edit Customer";
+          nameInput.focus();
+          return;
+        }
+
+        if (button.dataset.action === "copy") {
+          copyText(getNotification(customer))
+            .then(() => showNotice("Notification copied."))
+            .catch(() => showNotice("Could not copy notification."));
+          return;
+        }
+
+        if (button.dataset.action === "notify") {
+          const message = encodeURIComponent(getNotification(customer));
+          window.location.href = `sms:${customer.phone}?body=${message}`;
+          showNotice("Opening message app.");
+          return;
+        }
+
+        if (button.dataset.action === "delete") {
+          const ok = window.confirm(`Delete ${customer.name}?`);
+          if (!ok) return;
+          customers = customers.filter((item) => item.id !== customer.id);
+          showNotice("Customer deleted.");
+        }
+
+        saveCustomers();
+        render();
+      });
+
+      searchInput.addEventListener("input", render);
+      clearFormBtn.addEventListener("click", resetForm);
+
+      resetForm();
+      render();
+    </script>
+  </body>
+</html>
